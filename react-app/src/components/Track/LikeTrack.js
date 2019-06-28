@@ -1,0 +1,70 @@
+import React, { useContext } from "react";
+import { Mutation } from 'react-apollo';
+import { gql } from 'apollo-boost';
+import withStyles from "@material-ui/core/styles/withStyles";
+import IconButton from "@material-ui/core/IconButton";
+import ThumbUpIcon from "@material-ui/icons/ThumbUp";
+
+import { UserContext, ME_QUERY } from '../../Root';
+
+const LikeTrack = ({ classes, trackId, likesCount }) => {
+  const currentUser = useContext(UserContext)
+  const handleDisableLikedTrack = () => {
+    const userLikes = currentUser.likeSet
+    const isLiked = userLikes.findIndex(({ track }) => track.id === trackId) > -1
+    return isLiked
+  }
+
+  const handleClick = (event, createLike) => {
+    event.stopPropagation()
+    
+    try {
+      createLike()
+    } catch (error) {
+      console.error('ERROR while liking', error)
+    }
+  }
+
+  return (
+    <Mutation
+      mutation={LIKE_TRACK_MUTATION}
+      variables={{ trackId }}
+      refetchQueries={() => [{ query: ME_QUERY }]}
+    >
+      {createLike => (
+        <IconButton
+          className={classes.iconButton}
+          onClick={event => handleClick(event, createLike)}
+          disabled={handleDisableLikedTrack()}
+        >
+          {likesCount}
+          <ThumbUpIcon className={classes.icon}/>
+        </IconButton>
+      )}
+    </Mutation>
+  );
+};
+
+const LIKE_TRACK_MUTATION = gql`
+  mutation($trackId: Int!) {
+    createLike(trackId: $trackId) {
+      track {
+        id
+        likes {
+          id
+        }
+      }
+    }
+  }
+`;
+
+const styles = theme => ({
+  iconButton: {
+    color: "deeppink"
+  },
+  icon: {
+    marginLeft: theme.spacing.unit / 2
+  }
+});
+
+export default withStyles(styles)(LikeTrack);

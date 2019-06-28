@@ -1,0 +1,15 @@
+Pipfile.lock
+
+node_modules
+*/node_modules
+app/node_modules
+react-app/node_modules
+
+.vscode
+.DS_Store
+
+dist
+.env
+
+react-app/dist
+react-app/.env
